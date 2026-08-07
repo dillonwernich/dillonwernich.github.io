@@ -126,29 +126,20 @@ background:rgba(248,249,254,.9);
   }
 
   /* ── hero ── */
-  header.hero{padding:88px 0 150px;border-bottom:1px solid var(--line);position:relative;overflow:hidden;isolation:isolate}
+header.hero{padding:88px 0 150px;position:relative;overflow:hidden;isolation:isolate}
   header.hero>.wrap{position:relative;z-index:3}
 
   /* hero background: line drawing of an expandable security gate (the Xpanda object),
      half-open — pitch tight at the right edge, expanding leftward. */
-  .hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;user-select:none}
-  .hero-bg-glow{
-    position:absolute;inset:0;
-    background:
-      radial-gradient(56% 70% at 92% 8%, rgba(39,67,217,.075), transparent 66%),
-      radial-gradient(40% 52% at 100% 78%, rgba(27,47,164,.045), transparent 70%);
-  }
+
 #pageWave{
     position:fixed;inset:0;z-index:-1;pointer-events:none;user-select:none;
   }
   @media(max-width:760px){
     #pageWave{display:none}
   }
-  @media(max-width:760px){
-    header.hero{padding-bottom:170px}
-    .hero-bg-glow{
-      background:radial-gradient(70% 46% at 100% 100%, rgba(39,67,217,.06), transparent 70%);
-    }
+@media(max-width:760px){
+    header.hero{padding-bottom:72px}
   }
   .kicker{
     font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.08em;
@@ -185,7 +176,7 @@ background:rgba(248,249,254,.9);
   .dot-ok{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:7px;vertical-align:1px}
 
   /* ── section scaffolding ── */
-  section{padding:84px 0;border-bottom:1px solid var(--line)}
+section{padding:84px 0}
   .sec-head{margin-bottom:44px;max-width:760px}
   .eyebrow{
     font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.08em;
@@ -377,9 +368,7 @@ background:rgba(248,249,254,.9);
 </nav>
 
 <header class="hero" id="top">
-  <div class="hero-bg" aria-hidden="true">
-    <div class="hero-bg-glow"></div>
-  </div>
+
   <div class="wrap">
     <div class="kicker">Full-stack developer · Durban, South Africa</div>
     <h1>I build production systems <span class="accent">end&nbsp;to&nbsp;end</span> — and keep them running.</h1>
