@@ -138,8 +138,11 @@ background:rgba(248,249,254,.9);
       radial-gradient(56% 70% at 92% 8%, rgba(39,67,217,.075), transparent 66%),
       radial-gradient(40% 52% at 100% 78%, rgba(27,47,164,.045), transparent 70%);
   }
-  #pageWave{
+#pageWave{
     position:fixed;inset:0;z-index:-1;pointer-events:none;user-select:none;
+  }
+  @media(max-width:760px){
+    #pageWave{display:none}
   }
   @media(max-width:760px){
     header.hero{padding-bottom:170px}
@@ -819,8 +822,9 @@ background:rgba(248,249,254,.9);
    in the whitespace and dissolves smoothly near content — no hard
    edges anywhere. Respects prefers-reduced-motion; idles offscreen. */
 (function(){
-  var cv = document.getElementById('pageWave');
+var cv = document.getElementById('pageWave');
   if(!cv || !cv.getContext) return;
+  if(window.matchMedia('(max-width: 760px)').matches) return;
   var ctx = cv.getContext('2d');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   var W=0,H=0,dpr=1,t=Math.random()*100,raf=null;
