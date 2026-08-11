@@ -137,12 +137,6 @@ header.hero{padding:88px 0 150px;position:relative;overflow:hidden;isolation:iso
   /* hero background: line drawing of an expandable security gate (the Xpanda object),
      half-open — pitch tight at the right edge, expanding leftward. */
 
-#pageWave{
-    position:fixed;inset:0;z-index:-1;pointer-events:none;user-select:none;
-  }
-  @media(max-width:760px){
-    #pageWave{display:none}
-  }
 @media(max-width:760px){
     header.hero{padding-bottom:72px}
   }
@@ -179,6 +173,23 @@ header.hero{padding:88px 0 150px;position:relative;overflow:hidden;isolation:iso
   }
   .hero-meta b{color:var(--ink);font-weight:600}
   .dot-ok{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:7px;vertical-align:1px}
+
+  /* ── hero photo layout ── */
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:end}
+  .hero-grid h1{font-size:clamp(40px,5.6vw,66px)}
+.hero-photo{position:relative;align-self:stretch}
+
+  .hero-photo img{
+    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    height:100%;width:auto;max-width:none;z-index:1;
+    filter:drop-shadow(0 18px 34px rgba(21,23,28,.16));
+    -webkit-mask-image:linear-gradient(to bottom,#000 90%,transparent);
+            mask-image:linear-gradient(to bottom,#000 90%,transparent);
+  }
+  @media(max-width:860px){
+    .hero-grid{grid-template-columns:1fr;gap:0}
+    .hero-photo{display:none}
+  }
 
   /* ── section scaffolding ── */
 section{padding:84px 0}
@@ -355,7 +366,6 @@ section{padding:84px 0}
 </style>
 </head>
 <body>
-<canvas id="pageWave" aria-hidden="true"></canvas>
 
 <nav>
   <div class="wrap nav-in">
@@ -374,9 +384,10 @@ section{padding:84px 0}
 
 <header class="hero" id="top">
 
-  <div class="wrap">
-    <div class="kicker">Full-stack developer · Durban, South Africa</div>
-    <h1>I build production systems <span class="accent">end&nbsp;to&nbsp;end</span> — and keep them running.</h1>
+<div class="wrap hero-grid">
+    <div class="hero-copy">
+    <div class="kicker">Full-stack · Durban, South Africa</div>
+    <h1>I'm <span class="accent">Dillon</span>, a Software&nbsp;Developer.</h1>
     <p class="hero-sub">
       Android apps, Firebase backends, cloud functions, web portals and the emails and
       admin tooling around them <strong>designed, shipped and maintained solo, in production, with real users.</strong>
@@ -392,7 +403,14 @@ section{padding:84px 0}
     <div class="hero-meta">
       <span><span class="dot-ok"></span><b>Open to opportunities</b> — willing to relocate</span>
       <span>BSc Application Development</span>
-      <span>Google AI Professional Certificate</span>
+<span>Google AI Professional Certificate</span>
+    </div>
+    </div>
+<div class="hero-photo">
+      <picture>
+        <source media="(max-width:860px)" srcset="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+<img src="assets/dillon.png" alt="Dillon Wernich" width="1460" height="2627" fetchpriority="high" />
+      </picture>
     </div>
   </div>
 </header>
@@ -813,135 +831,6 @@ section{padding:84px 0}
   </div>
 </footer>
 
-<script>
-/* ── page particle wave ─────────────────────────────────────────────
-   One continuous dot-sheet across the whole document, anchored to
-   document coordinates. An occlusion map is rasterized from the real
-   positions of text blocks and cards, then blurred, so the wave lives
-   in the whitespace and dissolves smoothly near content — no hard
-   edges anywhere. Respects prefers-reduced-motion; idles offscreen. */
-(function(){
-var cv = document.getElementById('pageWave');
-  if(!cv || !cv.getContext) return;
-  if(window.matchMedia('(max-width: 760px)').matches) return;
-  var ctx = cv.getContext('2d');
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var W=0,H=0,dpr=1,t=Math.random()*100,raf=null;
-  var crest={r:39,g:67,b:217}, deep={r:27,g:47,b:164}, trough={r:196,g:203,b:227};
-
-  function lerp(a,b,k){return a+(b-a)*k}
-  function mix(c1,c2,k){return 'rgba('+Math.round(lerp(c1.r,c2.r,k))+','+Math.round(lerp(c1.g,c2.g,k))+','+Math.round(lerp(c1.b,c2.b,k))+','}
-
-  /* ── occlusion map (document space) ── */
-  var CELL=22, gw=0, gh=0, occ=null, docH=0;
-  var OCCLUDERS='h1,h2,h3,h4,h5,p,li,blockquote,figcaption,label,input,textarea,select,button,.btn,.chip,.kicker,.eyebrow,.hero-meta,.role-line,.form-note,.nums,.c-list,.case,.nda,.ai-card,nav .nav-in,footer .wrap';
-  function buildOcclusion(){
-    docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-    gw = Math.ceil(W/CELL)+1; gh = Math.ceil(docH/CELL)+1;
-    occ = new Float32Array(gw*gh);
-    var sy = window.scrollY, sx = window.scrollX, M = 26;
-    var els = document.querySelectorAll(OCCLUDERS);
-    for(var i=0;i<els.length;i++){
-      var r = els[i].getBoundingClientRect();
-      if(!r.width || !r.height) continue;
-      var x0=Math.max(0,Math.floor((r.left+sx-M)/CELL)), x1=Math.min(gw-1,Math.ceil((r.right+sx+M)/CELL));
-      var y0=Math.max(0,Math.floor((r.top+sy-M)/CELL)),  y1=Math.min(gh-1,Math.ceil((r.bottom+sy+M)/CELL));
-      for(var gy=y0;gy<=y1;gy++){
-        var row=gy*gw;
-        for(var gx=x0;gx<=x1;gx++) occ[row+gx]=1;
-      }
-    }
-    // separable box blur, two passes → smooth ~100px falloff
-    var R=2, tmp=new Float32Array(gw*gh), pass;
-    for(pass=0;pass<2;pass++){
-      var gy2,gx2,s,c2;
-      for(gy2=0;gy2<gh;gy2++){ var row2=gy2*gw;
-        for(gx2=0;gx2<gw;gx2++){ s=0;c2=0;
-          for(var k2=-R;k2<=R;k2++){var xx=gx2+k2; if(xx>=0&&xx<gw){s+=occ[row2+xx];c2++;}}
-          tmp[row2+gx2]=s/c2;
-        }
-      }
-      for(gx2=0;gx2<gw;gx2++){
-        for(gy2=0;gy2<gh;gy2++){ s=0;c2=0;
-          for(var k3=-R;k3<=R;k3++){var yy=gy2+k3; if(yy>=0&&yy<gh){s+=tmp[yy*gw+gx2];c2++;}}
-          occ[gy2*gw+gx2]=s/c2;
-        }
-      }
-    }
-  }
-  function guardAt(x,dy){
-    if(!occ) return 1;
-    var fx=x/CELL, fy=dy/CELL;
-    var gx=Math.floor(fx), gy=Math.floor(fy);
-    if(gx<0||gy<0||gx>=gw-1||gy>=gh-1) return 1;
-    var ax=fx-gx, ay=fy-gy, i=gy*gw+gx;
-    var v=occ[i]*(1-ax)*(1-ay)+occ[i+1]*ax*(1-ay)+occ[i+gw]*(1-ax)*ay+occ[i+gw+1]*ax*ay;
-    return Math.max(0,1-v*1.15);
-  }
-
-  /* ── wave field ── */
-  function wave(u,w,tt){
-    return Math.sin(u*5.1 + w*3.1 + tt*0.9)
-         + 0.62*Math.sin(u*9.7 - w*5.2 + tt*0.55)
-         + 0.45*Math.sin(u*15.5 + w*9.5 - tt*0.7)
-         + 0.3*Math.sin(u*2.2 - w*7.8 + tt*0.35);
-  }
-
-  function resize(){
-    dpr = Math.min(window.devicePixelRatio||1, 2);
-    W = window.innerWidth; H = window.innerHeight;
-    cv.width=W*dpr; cv.height=H*dpr;
-    cv.style.width=W+'px'; cv.style.height=H+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-
-  function frame(){
-    ctx.clearRect(0,0,W,H);
-    var sy = window.scrollY;
-    var mobile = W<761;
-    var colStep = mobile?7:8, rowStep = mobile?15:17, amp = mobile?12:15;
-    var cols = Math.floor(W/colStep);
-    var d0 = Math.max(0, Math.floor((sy-3*amp)/rowStep)*rowStep);
-    var d1 = sy + H + 3*amp;
-    for(var dy=d0; dy<=d1; dy+=rowStep){
-      var w = dy*0.0011;
-      // large-scale swell: some regions calm, some active — always smooth
-      for(var c=0;c<=cols;c++){
-        var u=c/cols, x=u*W;
-        var g = guardAt(x,dy);
-        if(g<=0.02) continue;
-        var z = wave(u,w,t);
-        var k = Math.pow((z+2.37)/4.74, 2.2);
-        var m = 0.55 + 0.45*Math.sin(dy*0.0007 + u*2.3 + t*0.12);
-        var a = (0.26 + 0.62*k) * g * m;
-        if(a<0.02) continue;
-        var y = dy - z*amp - sy;
-        var col = k>0.78 ? mix(crest,deep,(k-0.78)/0.22) : mix(trough,crest,k/0.78);
-        ctx.fillStyle = col + a.toFixed(3) + ')';
-        var r2 = 0.7+1.7*k;
-        ctx.fillRect(x-r2, y-r2, r2*2, r2*2);
-      }
-    }
-  }
-
-  function loop(){ t+=0.012; frame(); raf=requestAnimationFrame(loop); }
-  function start(){ if(raf!==null) return; if(reduce.matches){frame();} else {raf=requestAnimationFrame(loop);} }
-  function stop(){ if(raf!==null){cancelAnimationFrame(raf); raf=null;} }
-
-  var rT=null;
-  function relayout(){ resize(); buildOcclusion(); if(reduce.matches) frame(); }
-  resize(); buildOcclusion(); start();
-  window.addEventListener('resize', function(){ clearTimeout(rT); rT=setTimeout(relayout,150); });
-  window.addEventListener('load', function(){ buildOcclusion(); });
-  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ buildOcclusion(); if(reduce.matches) frame(); }); }
-  setTimeout(function(){ buildOcclusion(); }, 1400); // after reveal animations settle
-  if(reduce.matches){
-    window.addEventListener('scroll', function(){ frame(); }, {passive:true});
-  }
-  reduce.addEventListener && reduce.addEventListener('change', function(){ stop(); start(); });
-  document.addEventListener('visibilitychange', function(){ document.hidden ? stop() : start(); });
-})();
-</script>
 <script>
 (function(){
   "use strict";
